@@ -12,7 +12,7 @@ before_script:
 - docker pull nutthapat1423/stock-frontend || true
 script:
 - docker build --pull --cache-from nutthapat1423/stock-frontend  --tag nutthapat1423/stock-frontend  .
-- pytest
+- python -m pytest
 after_script:
 - docker images
 before_deploy:
