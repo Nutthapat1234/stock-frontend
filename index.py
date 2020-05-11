@@ -10,4 +10,4 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 app.layout = html.Div([dcc.Location(id="url"), sidebar.component, content])
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0')
