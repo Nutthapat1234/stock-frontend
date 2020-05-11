@@ -1,0 +1,24 @@
+sudo: required
+services:
+- docker
+env:
+  global:
+  - REGISTRY_USER:
+      secure: tXo1bjMKU1AASU6PCsoIjCLkaSUOXCVQyOfP0PPRkubPTWliAd+D+z7hSNEIp7xyZTo2WFzPZzii5aUDpvEHlt1ttzaN2lTJwC+8lBN+j+AMXeu0E/9pGBHnCleXpLjq5qywAfwYgiPUoTa8Bf/h6q6aOAoq6ECBAzK6JrARmNk067up27ALex5rGF03Qx9KfywC4REkVRqx+O8+SQxObnyDAkfcXcFvLV+0vw52V+AoRiAbX6FJdexZXVA2SrTbC+Ef3zkbxccS4ixAa050q6ADVXkGjoXjME/o+1R2JN9/3gwi6KR9ElHtW/r9HXA0LbpI/ZotRMqt1BkdBW67TtC18ezcSql9Oxk2iQOX0JhtROWfpkri79MhZBTJH15DFr3Zt9HsWlC/nmRijrBk3B7pSE3bANbeMKapONaceY7danFpf8AYBPcy8V/LOHTrJ7OQX+YJK9inmR9nXeRUhSbDarwDkwnrfMT9avVAEL05MIr5AB8GOhGusLikRblDbTs4VC7Bc5LRxSos7OJUOlDcRN0KZiNLiH9eQBzQhvO7g1AKfOxXKeN23KPpg48S+rQqci0c3A2hTL3QHLlHeddEAQqY5At0D7FRFdac0jGTRwv7lUI97CXjCU43JAU47jEnx/HrTBOt8WTrCJxULRo04l7doUitl5/YxwO5qMU=
+    REGISTRY_PASS: 
+      secure: DPnb7XsLYrgks7rwU05dUTD7yGsDdLw7PPU+qEv8ZPSjLKaGzX01B02HNc/jv7xTsAbgvLNUBeKh/7RBWXBWU4nWtu9+OMR8c5X3YBmiuTEdihXhWy8E/m+MjMr5chjrUaKVWmP/Hj6vXN5+K6k1Wi4RDjC4fp4/pTgmUXzcRiskQn1txRDsf8MiBZYc4iO7uf+BdA0nPo4wLKSmU/jCvZ6WdLeqEPvCUFAIKecZ3AWBF1muUWxTSrpQUF2HyHtmpUgsEXRXzdfz2oEL1rYBrn5DwAF4uSj+FdwG0DTt3nYfO52QImcATUg6tjQ0rxfNiaRrx/OBpwBXG7lpJwV0dbUffdCdjR1POlh3Ihwec+ZOG/HFkVWuRFxs50kIuEbyCn2Z/YVzeNDNzkOQ4SllXm4P3r6UwLsb2lzsYkij8Gs5DQBZV6ihu/Kc33r8hbgTtPmvz6K+FhjuJZy3MOo9UwlMqmMrq7/MczmipD65FJjVG8O5ycoA8h34jb9oS6ygj0ag307BqpJGEzgwmn5JvgoZ0yM90a4A7pFMAMRcBYLzm3rdCEvGe7NXhjc5pcI4m5t2SybypLGnwtaxF3rA7xOtyyKjY2ljGeknaIpe5ELY4z1K4inQzpj0iSoU25hAscHmwWgPWnYMHnQ/PxpiMbIwbU1TzqnEtVWX3zx4GnU=
+
+before_script:
+- docker pull nutthapat1423/stock-frontend || true
+script:
+- docker build --pull --cache-from nutthapat1423/stock-frontend  --tag nutthapat1423/stock-frontend  .
+- docker run nutthapat1423/stock-frontend
+after_script:
+- docker images
+before_deploy:
+- docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+deploy:
+  provider: script
+  script: docker push nutthapat1423/stock-frontend
+  on:
+    branch: master
