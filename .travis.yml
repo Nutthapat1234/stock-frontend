@@ -1,6 +1,14 @@
 sudo: required
+language: python
+python:
+  - 3.8
+install: pip install -r requirements.txt
+script:
+  - python index.py
 deploy:
   - provider: heroku
     api_key:
       secure: bPeC4LvmSEfJHCDhvp9JJ2hOjTNymcWB+usqfDUV8ilGBGFIbOEF/xEl3BBqM92aL6l60MJS9vRDK9DvjDcJe/XhrF8B0SXs99KO6SQElFkujymTTbjyTn4HM1PPVL1quML2F9IiU0d8y4HBH+6+IdmCh6CJhnVz8jKivX7+XsjhNr4T9E+de3qCF9tErlkNNq866JAJj6jCSOiLkBZnHPxvtF7MSdUHWWrMdMO8Tu+nmA7hWDKY/3SP6EY4a27bQQC1u8ckIqOaOKmuUXzM2ERHF1P/Xn0WUE7TL6Vmfsmpk995egDq83iEqI7wB9v0w3lwzei0aAiHkop4mXosYVD7Hy4+eBgQSlKmTm7KqkjiiTPHfSlXL4frIGxhLjpJ90bopJWQrdZOSa/XMDzNId0+E9uXUs4VBLfKZInU9rEPypmOW1D11wABvkcW399pluuueLL5dby1QyswkzTWqfHEsw3OPF7hvrtf+k85Ia9vcnIuu4b8OrzQMVzpO7BER8ZVELVikRUHqJK9ZWKVTdSd1/3eWsjcpRUlUyxQV19BCg9p4ggm7kodEenV8kEebCyLzPVyu2rXFARXskxKwvPIITIuTFwxMNUp+MK/lZV7ZNqRPb3obC7uFgWZQ5KkozqBW3WMccec1hXgmTNb4tQUWZtzlvH+6+lzVh6zoek=
     app: stock-frontend
+    on:
+      branch: master
