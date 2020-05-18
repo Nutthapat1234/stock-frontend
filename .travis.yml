@@ -6,9 +6,9 @@ install: pip install -r requirements.txt
 script:
   - echo "skipping tests"
 deploy:
-  - provider: heroku
-    api_key:
-      secure: bPeC4LvmSEfJHCDhvp9JJ2hOjTNymcWB+usqfDUV8ilGBGFIbOEF/xEl3BBqM92aL6l60MJS9vRDK9DvjDcJe/XhrF8B0SXs99KO6SQElFkujymTTbjyTn4HM1PPVL1quML2F9IiU0d8y4HBH+6+IdmCh6CJhnVz8jKivX7+XsjhNr4T9E+de3qCF9tErlkNNq866JAJj6jCSOiLkBZnHPxvtF7MSdUHWWrMdMO8Tu+nmA7hWDKY/3SP6EY4a27bQQC1u8ckIqOaOKmuUXzM2ERHF1P/Xn0WUE7TL6Vmfsmpk995egDq83iEqI7wB9v0w3lwzei0aAiHkop4mXosYVD7Hy4+eBgQSlKmTm7KqkjiiTPHfSlXL4frIGxhLjpJ90bopJWQrdZOSa/XMDzNId0+E9uXUs4VBLfKZInU9rEPypmOW1D11wABvkcW399pluuueLL5dby1QyswkzTWqfHEsw3OPF7hvrtf+k85Ia9vcnIuu4b8OrzQMVzpO7BER8ZVELVikRUHqJK9ZWKVTdSd1/3eWsjcpRUlUyxQV19BCg9p4ggm7kodEenV8kEebCyLzPVyu2rXFARXskxKwvPIITIuTFwxMNUp+MK/lZV7ZNqRPb3obC7uFgWZQ5KkozqBW3WMccec1hXgmTNb4tQUWZtzlvH+6+lzVh6zoek=
-    app: stock-frontend
-    on:
-      branch: master
+  provider: heroku
+  app: stock-frontend
+  on:
+    branch: master
+  api_key:
+    secure: H6iXd1jVCSrnTt3E5H0jZFTqd/y4hP+4IEdTHtPGU0LQtwxRqVsRsNWg8jln+aXi6ygmafwaHQSAvGKK9WUSjbmMq1V9wtfyogD+Y+9WXmlgtfqGYtctk1sk3aE0/qd/fuSiXfXVlh3XYElDk94FqA66B9Rx9oIcXNv77L0gMbdeBQbKtlcGv2p31XElKRIsup5vaJKDKmpkrW8lJzF5Lw8wEUbe/d0RJpPhe61tKQnDJ2rvnChjJASMsc4oeKU7UGoqDZwsIhfPIqpcjvAnmRPfPXMbSISF576n1mDCdJfdv7KYkpCvNv3rAV9OaB1qIrOd1fL+jDYZxqfdZ+YZqiCb7IO+67pOfi3jhuQA0DZOz5EWlmxd0bY/smHw49jRGT4C3hZM/vscYly5Duzw5p8Q0zAId6Cu6v+7MHclmNzdBsVBx1IdEbtaheHjCCkVQ15kCgdEo3YwWT79lNoX1LTPBwTw0Cx9xBwZ9aH6ubmhVYEP+wj6tUuejJABEzAov/riPBv5MqPVkMaDgRHhUO1m/2LGdmuVJ/A/kqdpkunTSnFvLSPi9IZ5xDksaZa7gMoXhZLfzydL785rgoftID7fZKXzhmMONujJs0PeqnSkjs28w3Yu8QRYr3sI2SybdpOq2SxXVnqwuvtbtKfyaUfztV8M+DFiO5kQrD+vqww=
