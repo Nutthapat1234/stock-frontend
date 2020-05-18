@@ -1,16 +1,45 @@
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 
-mainComponent = html.Div([
-    html.H3('App 1'),
-    dcc.Dropdown(
-        id='app-1-dropdown',
-        options=[
-            {'label': 'App 1 - {}'.format(i), 'value': i} for i in [
-                'NYC', 'MTL', 'LA'
+from component import intervalTab
+from component.control import generateControl
+from config import stockList, chartList
+
+component = dbc.Container(
+    [
+        dbc.Row(
+            [
+                dbc.Col(generateControl(
+                    [
+                        {
+                            "name": "stock",
+                            "id": "stock-variable",
+                            "columns": stockList,
+                            "value": None
+                        },
+                    ]
+                ), md=5),
+                dbc.Col(generateControl(
+                    [
+                        {
+                            "name": "chart Type",
+                            "id": "chart-variable",
+                            "columns": chartList,
+                            "value": None
+                        }
+                    ]
+                ), md=5),
+            ],
+            align="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    intervalTab.component,
+                )
             ]
-        ]
-    ),
-    html.Div(id='app-1-display-value'),
-    dcc.Link('Go to App 2', href='/apps/app2')
-])
+        )
+    ],
+    fluid=True,
+)

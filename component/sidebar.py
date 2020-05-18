@@ -6,16 +6,16 @@ from style import SIDEBAR_STYLE
 
 component = html.Div(
     [
-        html.H2("Sidebar", className="display-4"),
+        html.H2("Stock", className="display-4"),
         html.Hr(),
         html.P(
-            "A simple sidebar layout with navigation links", className="lead"
+            "Predicate stock using Elliott Wave", className="lead"
         ),
         dbc.Nav(
             [
-                dbc.NavLink("Page 1", href="/page-1", id="page-1-link"),
-                dbc.NavLink("Page 2", href="/page-2", id="page-2-link"),
-                dbc.NavLink("Page 3", href="/page-3", id="page-3-link"),
+                dbc.NavLink("real-time", href="/page-1", id="page-1-link"),
+                dbc.NavLink("predicate", href="/page-2", id="page-2-link"),
+                dbc.NavLink("information", href="/page-3", id="page-3-link"),
             ],
             vertical=True,
             pills=True,
