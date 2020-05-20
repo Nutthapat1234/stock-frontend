@@ -57,7 +57,3 @@ class Service:
 
         return response
 
-# if __name__ == '__main__':
-#     graph = Service.getInstance().getGraph("silver", "1m", "waterfall")
-#     for i in graph["y"]:
-#         print(i)

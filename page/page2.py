@@ -1,16 +1,27 @@
-import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 
-mainComponent = html.Div([
-    html.H3('App 2'),
-    dcc.Dropdown(
-        id='app-2-dropdown',
-        options=[
-            {'label': 'App 2 - {}'.format(i), 'value': i} for i in [
-                'NYC', 'MTL', 'LA'
+from component.control import generateControl
+from config import stockList
+
+component = dbc.Container(
+    [
+        dbc.Row(
+            [
+                dbc.Col(generateControl(
+                    [
+                        {
+                            "name": "stock",
+                            "id": "stock-prediction-variable",
+                            "columns": stockList,
+                            "value": None
+                        },
+                    ]
+                )),
             ]
-        ]
-    ),
-    html.Div(id='app-2-display-value'),
-    dcc.Link('Go to App 1', href='/apps/app1')
-])
+        ),
+        html.Br(),
+        html.Div(id="prediction-graph")
+    ],
+    fluid=True
+)
