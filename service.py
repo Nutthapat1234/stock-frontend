@@ -16,7 +16,8 @@ class Service:
             raise Exception("The Service is already init")
         else:
             self.baseUrl = {
-                "silver": config.silverUrl
+                "silver": config.silverUrl,
+                "predictionUrl": config.predictionUrl
             }
             Service.__instance = self
 
@@ -57,3 +58,16 @@ class Service:
 
         return response
 
+    def getPrediction(self, data):
+        payload = {
+            "name": "XAUUSD",
+            "input": data
+        }
+        response = requests.post(self.baseUrl["predictionUrl"],
+                                 json=payload)
+        response = [x * 100 for x in response.json()["output"]]
+        return response
+
+
+if __name__ == '__main__':
+    Service.getInstance().getPrediction([1.0, 0.122, 0.1, 0.43, 0.92, 0.51, 0.92, 0.25, 0.68, 1.0])

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from random import uniform
 
 from dash.dependencies import Input, Output
@@ -7,7 +8,7 @@ import dash_core_components as dcc
 from app import app
 import plotly.graph_objs as go
 import component.intervalTab
-from config import prediction_interval, show_prediction, example_output
+from config import prediction_interval, show_prediction, standard_pattern, focus_range
 
 from page import page1, page2
 from service import Service
@@ -51,24 +52,27 @@ def render_page_content(pathname):
 def render_tab_content(active_tab, stock, chartType):
     service = Service.getInstance()
     if stock and chartType:
+        if active_tab == "1mi" and chartType == "Candlestick":
+            return
         result = service.getGraph(stock, active_tab, chartType)
         figure = None
         if chartType == "Scatter":
-            figure = go.Scatter(x=result["x"], y=result["y"], mode=result["mode"])
+            figure = go.Scatter(x=result["x"], y=result["y"], mode="lines")
+            focus = result["x"]
         elif chartType == "Candlestick":
             figure = go.Candlestick(x=result["start"],
                                     open=result["open"],
                                     high=result["high"],
                                     low=result["low"],
                                     close=result["close"])
+            focus = result["start"]
 
         return dcc.Graph(figure=go.Figure(
             data=[figure],
             layout=go.Layout(
                 height=600,
-                # yaxis={'range': [min(y[-20:]), max(y[-20:])]},
                 xaxis={
-                    # 'range': [min(x[-20:]), max(x[-20:])],
+                    'range': [min(focus[-20:]), max(focus[-20:])],
                     'rangeslider': {'visible': True},
                 },
             ),
@@ -90,75 +94,88 @@ def render_prediction_graph(stock):
     if stock:
         container = []
 
-        # for interval in prediction_interval:
-        result = Service.getInstance().getGraph(stock, "1m", "Scatter")
-        x = result["x"]
-        y = result["y"]
+        for interval in prediction_interval:
+            result = Service.getInstance().getGraph(stock, interval, "Scatter")
+            x = result["x"]
+            y = result["y"]
 
-        all_point = go.Scatter(x=x, y=y, mode=result["mode"])
-        last_ten = go.Scatter(x=x[-10:], y=y[-10:], mode=result["mode"], name="last 10 point")
-        container.append(html.H3("Prediction " + stock + " for " + "1m"))
+            all_point = go.Scatter(x=x, y=y, mode="lines")
+            last_ten = go.Scatter(x=x[-10:], y=y[-10:], mode=result["mode"], name="last 10 point")
+            container.append(html.H3("Prediction " + stock + " for " + interval))
 
-        buttons = []
-        data = []
-        number = 0
-        active = 0
-        # for example
-        possible_value = max(example_output)
-        max_value = possible_value
-        min_value = min(example_output)
-        for index in range(13):
-            show = False
-            if index == 0:
-                name = "original"
-                data = [all_point, last_ten]
-            else:
-                if number < len(example_output) and example_output[number] == possible_value:
-                    active = number + 1
-                    show = True
-                name = "pattern " + str(index) + " " + str(round(example_output[number] * 100)) + "%"
-                label_name = "pattern " + str(index)
-                data.append(
-                    go.Scatter(x=x[-10:], y=[uniform(15, 20) for x in range(1, 10)], mode="lines+markers", name=label_name,
-                               visible=show)
-                )
-                number += 1
-            buttons.append(dict(label=name,
-                                method="update",
-                                args=[{"visible": show_prediction[index]},
-                                      {"title": name,
-                                       "annotations": []}]), )
+            buttons = []
+            data = []
+            number = 0
+            active = 0
+            active_name = ""
+            # for example
+            output = Service.getInstance().getPrediction(y[-10:])
+            possible_value = max(output)
+            for index in range(13):
+                show = False
+                if index == 0:
+                    name = "original"
+                    data = [all_point, last_ten]
+                else:
+                    name = "pattern " + str(index) + " " + str(round(output[number])) + "%"
+                    if number < len(output) and output[number] == possible_value:
+                        active_name = name
+                        active = number + 1
+                        show = True
+                    label_name = "pattern " + str(index)
+                    normalized_value = normalize(max(y[-10:]), min(y[-10:]), standard_pattern[number])
+                    data.append(
+                        go.Scatter(x=x[-10:], y=normalized_value, mode="lines+markers",
+                                   name=label_name,
+                                   visible=show)
+                    )
+                    number += 1
+                buttons.append(dict(label=name,
+                                    method="update",
+                                    args=[{"visible": show_prediction[index]},
+                                          {"title": name,
+                                           "annotations": []}]), )
 
-        fig = go.Figure(
-            data=data,
-            layout=go.Layout(
-                height=600,
-                width=1050,
-            ),
-        )
-        fig.update_layout(
-            updatemenus=[
-                dict(
-                    type="buttons",
-                    direction="down",
-                    active=active,
-                    x=1.4,
-                    y=1.1,
-                    buttons=list(buttons),
-                )
-            ])
+            fig = go.Figure(
+                data=data,
+                layout=go.Layout(
+                    title=active_name,
+                    height=600,
+                    width=1050,
+                    yaxis={
+                        'range': [min(y[-20:]) - 1, max(y[-20:]) + 1]
+                    },
+                    xaxis={
+                        'range': [datetime.fromisoformat(min(x[-20:])) - timedelta(days=focus_range[interval]),
+                                  datetime.fromisoformat(max(x[-20:])) + timedelta(days=focus_range[interval])
 
-        container.append(
-            dbc.Row(
-                [
-                    dbc.Col(
-                        [
-                            dcc.Graph(figure=fig)
-                        ]
-                    ),
-                ],
+                                  ],
+                    }
+                ),
             )
-        )
+            fig.update_layout(
+                updatemenus=[
+                    dict(
+                        type="buttons",
+                        direction="down",
+                        active=active,
+                        x=1.4,
+                        y=1.1,
+                        buttons=list(buttons),
+                    )
+                ])
+
+            container.append(
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            [
+                                dcc.Graph(figure=fig)
+                            ]
+                        ),
+                    ],
+                )
+            )
 
         return dbc.Container(
             container,
@@ -166,10 +183,13 @@ def render_prediction_graph(stock):
         )
 
 
-def to_percentage(max_scale, min_scale, max_value, min_value, data):
+def normalize(max_scale, min_scale, data):
     max_scale = max_scale
     min_scale = min_scale
+    max_value = max(data)
+    min_value = min(data)
+    output = []
+    for element in data:
+        output.append(min_scale + ((element - min_value) * (max_scale - min_scale)) / (max_value - min_value))
 
-    value = min_scale + ((data - min_value) * (max_scale - min_scale)) / (max_value - min_value)
-
-    return value
+    return output
