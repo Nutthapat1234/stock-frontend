@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from random import uniform
+from random import uniform, randint
 
 from dash.dependencies import Input, Output
 import dash_html_components as html
@@ -10,29 +10,32 @@ import plotly.graph_objs as go
 import component.intervalTab
 from config import prediction_interval, show_prediction, standard_pattern, focus_range
 
-from page import page1, page2
+from page import realTime, prediction, backTest
 from service import Service
 
 
 @app.callback(
-    [Output(f"page-{i}-link", "active") for i in range(1, 4)],
+    [Output(f"page-{i}-link", "active") for i in range(1, 5)],
     [Input("url", "pathname")],
 )
 def toggle_active_links(pathname):
     if pathname == "/":
         # Treat page 1 as the homepage / index
-        return True, False, False
-    return [pathname == f"/page-{i}" for i in range(1, 4)]
+        return True, False, False, False
+    return [pathname == f"/page-{i}" for i in range(1, 5)]
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
-        return page1.component
+        return realTime.component
     elif pathname == "/page-2":
-        return page2.component
+        return prediction.component
     elif pathname == "/page-3":
-        return html.P("Oh cool, this is page 3!")
+        return backTest.component
+
+    elif pathname == "/page-4":
+        return html.P("Oh cool, this is page 4!")
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -99,7 +102,7 @@ def render_prediction_graph(stock):
             x = result["x"]
             y = result["y"]
 
-            all_point = go.Scatter(x=x, y=y, mode="lines")
+            all_point = go.Scatter(x=x, y=y, mode="lines", showlegend=False)
             last_ten = go.Scatter(x=x[-10:], y=y[-10:], mode=result["mode"], name="last 10 point")
             container.append(html.H3("Prediction " + stock + " for " + interval))
 
@@ -143,11 +146,11 @@ def render_prediction_graph(stock):
                     height=600,
                     width=1050,
                     yaxis={
-                        'range': [min(y[-20:]) - 1, max(y[-20:]) + 1]
+                        'range': [min(y[-20:])-5, max(y[-20:])+5]
                     },
                     xaxis={
-                        'range': [datetime.fromisoformat(min(x[-20:])) - timedelta(days=focus_range[interval]),
-                                  datetime.fromisoformat(max(x[-20:])) + timedelta(days=focus_range[interval])
+                        'range': [datetime.fromisoformat(min(x[-15:])) - timedelta(days=focus_range[interval]),
+                                  datetime.fromisoformat(max(x[-15:])) + timedelta(days=focus_range[interval])
 
                                   ],
                     }
@@ -177,10 +180,31 @@ def render_prediction_graph(stock):
                 )
             )
 
-        return dbc.Container(
-            container,
-            fluid=True
-        )
+        return container
+
+
+@app.callback(
+    Output("backTest-graph", "children"),
+    [Input("stock-backTest-variable", "value")]
+)
+def render_backTest_graph(stock):
+    if stock:
+        x_value = [x for x in range(500)]
+        y_value = [uniform(0, 1000) for x in range(500)]
+        test_points = []
+        test_data = {"x_value": [], "y_value": []}
+        for i in range(5):
+            index = randint(0, 490)
+            if (index < x or index > x + 10 for x in test_points):
+                test_points.append(index)
+                test_data["x_value"] += x_value[index:index + 10]
+                test_data["x_value"] += [None]
+                test_data["y_value"] += y_value[index:index + 10]
+                test_data["y_value"] += [None]
+        data = [go.Scatter(x=x_value, y=y_value, mode="lines", ),
+                go.Scatter(x=test_data["x_value"], y=test_data["y_value"], mode="lines")]
+        fig = go.Figure(data=data)
+        return dcc.Graph(figure=fig)
 
 
 def normalize(max_scale, min_scale, data):

@@ -22,7 +22,10 @@ component = dbc.Container(
         ),
         html.Br(),
         dbc.Spinner(
-            html.Div(id="prediction-graph"),
+            dbc.Container(
+                id="prediction-graph",
+                fluid=True,
+            ),
             spinner_style={"width": "3rem", "height": "3rem"},
             color="primary"
         )

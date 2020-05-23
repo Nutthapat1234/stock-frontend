@@ -15,7 +15,8 @@ component = html.Div(
             [
                 dbc.NavLink("real-time", href="/page-1", id="page-1-link"),
                 dbc.NavLink("predication", href="/page-2", id="page-2-link"),
-                dbc.NavLink("information", href="/page-3", id="page-3-link"),
+                dbc.NavLink("back-test", href="/page-3", id="page-3-link"),
+                dbc.NavLink("information", href="/page-4", id="page-4-link"),
             ],
             vertical=True,
             pills=True,

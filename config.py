@@ -5,8 +5,8 @@ predictionUrl = 'https://stormy-retreat-35286.herokuapp.com/model'
 stockList = ["silver"]
 chartList = ["Scatter", "Candlestick"]
 intervals = ["1mi", "30mi", "1h", "1d", "10d", "20d", "1m", "3m", "1y"]
-prediction_interval = ["1d", "7d", "1m", "3m"]
-focus_range = {"1d": 2, "7d": 7, "1m": 30, "3m": 60}
+prediction_interval = ["1d", "10d", "1m", "3m"]
+focus_range = {"1d": 2, "10d": 14, "1m": 120, "3m": 120}
 
 standard_pattern = [[1.0, 0.32, 0.58, 0.0, 0.42, 0.21, 0.84, 0.32, 0.58, 0.16],
                     [0.0, 0.68, 0.42, 1.0, 0.58, 0.79, 0.16, 0.68, 0.42, 0.84],
