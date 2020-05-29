@@ -16,7 +16,11 @@ component = dbc.Container(
             id="tabs",
             active_tab="1mi"
         ),
-        html.Div(id="tab-content", className="p-4"),
+        dbc.Spinner(
+            html.Div(id="tab-content", className="p-4"),
+            spinner_style={"width": "3rem", "height": "3rem"},
+            color="primary"
+        )
+
     ]
 )
-
