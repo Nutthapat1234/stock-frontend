@@ -17,7 +17,8 @@ class Service:
         else:
             self.baseUrl = {
                 "silver": config.silverUrl,
-                "predictionUrl": config.predictionUrl
+                "predictionUrl": config.predictionUrl,
+                "backTestUrl": config.backtestUrl
             }
             Service.__instance = self
 
@@ -42,8 +43,8 @@ class Service:
         for element in data["intervals"]:
             response["start"].append(element["start"])
             response["open"].append(element["open"])
-            response["high"].append(element["high"])
-            response["low"].append(element["low"])
+            response["high"].append(element["high"] if 'high' in element else None)
+            response["low"].append(element["low"] if 'low' in element else None)
             response["close"].append(element["last"])
         return response
 
@@ -58,9 +59,9 @@ class Service:
 
         return response
 
-    def getPrediction(self, data):
+    def getPrediction(self, stock, data):
         payload = {
-            "name": "XAUUSD",
+            "name": stock,
             "input": data
         }
         response = requests.post(self.baseUrl["predictionUrl"],
@@ -68,6 +69,15 @@ class Service:
         response = [x * 100 for x in response.json()["output"]]
         return response
 
+    def getBackTest(self, stock):
+        response = requests.get(self.baseUrl["backTestUrl"] + stock)
+        data = response.json()
+        x = []
+        y = []
+        for element in data["data"]:
+            x.append(element["start"])
+            y.append(element["last"])
+        return {"x": x, "y": y, "label": data["label"]}
 
-if __name__ == '__main__':
-    Service.getInstance().getPrediction([1.0, 0.122, 0.1, 0.43, 0.92, 0.51, 0.92, 0.25, 0.68, 1.0])
+# if __name__ == '__main__':
+#     Service.getInstance().getPrediction([1.0, 0.122, 0.1, 0.43, 0.92, 0.51, 0.92, 0.25, 0.68, 1.0])

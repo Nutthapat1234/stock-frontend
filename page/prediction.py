@@ -1,5 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_html_components as html
+import dash_core_components as dcc
 
 from component.control import generateControl
 from config import stockList
@@ -28,7 +29,7 @@ component = dbc.Container(
             ),
             spinner_style={"width": "3rem", "height": "3rem"},
             color="primary"
-        )
+        ),
     ],
     fluid=True
 )
