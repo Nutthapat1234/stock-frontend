@@ -8,6 +8,18 @@ chartList = ["Scatter", "Candlestick"]
 intervals = ["1mi", "30mi", "1h", "1d", "10d", "20d", "1m", "3m", "1y"]
 prediction_interval = ["1d", "10d", "1m", "3m"]
 focus_range = {"1d": 2, "10d": 14, "1m": 120, "3m": 120}
+pattern_name = {1: "Correction Zigzag",
+                2: "reverse Correction Zigzag",
+                3: "Triangle pattern",
+                4: "Triangle pattern",
+                5: "Correction Zigzag weak b",
+                6: "impulse wave 5 extension",
+                7: "reverse impulse wave 1 extension",
+                8: "impulse wave 3 extension",
+                9: "reverse impulse wave 3 extension",
+                10: "impulse wave 1 extension",
+                11: "reverse impulse wave 5 extension",
+                12: "complete cycle"}
 
 standard_pattern = [[1.0, 0.32, 0.58, 0.0, 0.42, 0.21, 0.84, 0.32, 0.58, 0.16],
                     [0.0, 0.68, 0.42, 1.0, 0.58, 0.79, 0.16, 0.68, 0.42, 0.84],
@@ -37,3 +49,5 @@ show_prediction = [
     [True, True, False, False, False, False, False, False, False, False, False, False, True, False],
     [True, True, False, False, False, False, False, False, False, False, False, False, False, True],
 ]
+
+predict_trend = {"up": [1, 3, 4, 7, 9, 11, 12], "down": [2, 5, 6, 8, 10]}

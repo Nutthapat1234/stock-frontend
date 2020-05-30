@@ -9,7 +9,7 @@ import dash_core_components as dcc
 from app import app, cache
 import plotly.graph_objs as go
 import component.intervalTab
-from config import prediction_interval, show_prediction, standard_pattern, focus_range
+from config import prediction_interval, show_prediction, standard_pattern, focus_range, pattern_name, predict_trend
 
 from page import realTime, prediction, backTest
 from service import Service
@@ -60,7 +60,7 @@ def render_page_content(pathname):
 def render_real_time_tab_content(active_tab, stock, chartType):
     service = Service.getInstance()
     if stock and chartType:
-        if active_tab in ["1mi","30mi","1h"] and chartType == "Candlestick":
+        if active_tab in ["1mi", "30mi", "1h"] and chartType == "Candlestick":
             return
         result = service.getGraph(stock, active_tab, chartType)
         figure = None
@@ -118,6 +118,8 @@ def render_prediction_graph(stock):
             number = 0
             active = 0
             active_name = ""
+            active_value = None
+            active_color = None
             # for example
             output = Service.getInstance().getPrediction("XAUUSD", y[-10:])
             possible_value = max(output)
@@ -125,26 +127,41 @@ def render_prediction_graph(stock):
                 show = False
                 if index == 0:
                     name = "original"
+                    button_name = "original"
                     data = [all_point, last_ten]
                 else:
-                    name = "pattern " + str(index) + " " + str(round(output[number])) + "%"
+                    name = "pattern " + str(index) + " " + pattern_name[index] + " " + str(round(output[number])) + "%"
+                    button_name = "pattern " + str(index) + " " + str(round(output[number])) + "%"
                     if number < len(output) and output[number] == possible_value:
                         active_name = name
                         active = number + 1
+                        if round(output[number]) > 90:
+                            if active_name in predict_trend["up"]:
+                                active_value = "This stock tend to be up"
+                                active_color = "success"
+                            else:
+                                active_value = "This stock tend to be down"
+                                active_color = "danger"
+                        else:
+                            active_value = "The similarity of pattern is less than 90%, this stock is currently in unknown trend"
+                            active_color = "dark"
                         show = True
                     label_name = "pattern " + str(index)
                     normalized_value = normalize(max(y[-10:]), min(y[-10:]), standard_pattern[number])
                     data.append(
                         go.Scatter(x=x[-10:], y=normalized_value, mode="lines+markers",
                                    name=label_name,
-                                   visible=show)
+                                   visible=show,
+                                   )
                     )
                     number += 1
-                buttons.append(dict(label=name,
-                                    method="update",
-                                    args=[{"visible": show_prediction[index]},
-                                          {"title": name,
-                                           "annotations": []}]), )
+                buttons.append(dict(
+                    label=button_name,
+                    method="update",
+                    args=[
+                        {"visible": show_prediction[index],
+                         "title": name,
+                         "annotations": []}]), )
 
             fig = go.Figure(
                 data=data,
@@ -160,7 +177,7 @@ def render_prediction_graph(stock):
                                   datetime.fromisoformat(max(x[-15:])) + timedelta(days=focus_range[interval])
 
                                   ],
-                    }
+                    },
                 ),
             )
             fig.update_layout(
@@ -174,7 +191,16 @@ def render_prediction_graph(stock):
                         buttons=list(buttons),
                     )
                 ])
-
+            container.append(
+                dbc.Row(
+                    [
+                        dbc.Alert(id="alert",
+                                  children="From the most percentage of similar pattern: " + active_value,
+                                  color=active_color,
+                                  style={"width": "100%"})
+                    ]
+                )
+            )
             container.append(
                 dbc.Row(
                     [
@@ -184,10 +210,20 @@ def render_prediction_graph(stock):
                             ]
                         ),
                     ],
-                )
+                ),
             )
         prediction_status = stock
         return container
+
+
+@app.callback(
+    Output("alert", "children"),
+    # [Input(f"predict_button_{interval}_{index}", "n_clicks") for interval in prediction_interval for index in
+    #  range(1, 13)]
+    [Input("1d_1", "visible")]
+)
+def test(v):
+    print(v)
 
 
 @app.callback(Output("callback-temp", "children"), [Input('prediction-cache', 'n_intervals')])
@@ -223,10 +259,24 @@ def render_backTest_graph(stock):
 
         for pattern in sorted(data_set):
             pattern = data_set[pattern]
-            data = [go.Scatter(x=x_value, y=y_value, mode="lines", ),
-                    go.Scatter(x=pattern["x_value"], y=pattern["y_value"], mode="lines+markers")]
-            fig = go.Figure(data=data, layout=go.Layout(title="Pattern" + str(pattern["pattern"])))
+            if pattern["pattern"] in predict_trend["up"]:
+                value = "This stock tend to be up"
+                color = "success"
+            else:
+                value = "This stock tend to be down"
+                color = "danger"
+
+            data = [go.Scatter(x=x_value, y=y_value, mode="lines", name=stock),
+                    go.Scatter(x=pattern["x_value"], y=pattern["y_value"], mode="lines+markers",
+                               name="Pattern " + str(pattern["pattern"]))]
+            fig = go.Figure(data=data)
+            graphs.append(html.H3("Pattern " + str(pattern["pattern"]) + " (" + pattern_name[pattern["pattern"]] + ")"))
+            graphs.append(dbc.Alert(
+                children="From the principle in pattern " + str(pattern["pattern"]) + " :" + value,
+                color=color,
+                style={"width": "100%"}))
             graphs.append(dcc.Graph(figure=fig))
+            graphs.append(html.Br())
         return graphs
 
 
