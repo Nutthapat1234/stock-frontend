@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 
+from config import path
 from style import SIDEBAR_STYLE
 
 component = html.Div(
@@ -13,11 +14,11 @@ component = html.Div(
         ),
         dbc.Nav(
             [
-                dbc.NavLink("real-time", href="/page-1", id="page-1-link"),
-                dbc.NavLink("predication", href="/page-2", id="page-2-link"),
-                dbc.NavLink("back-test", href="/page-3", id="page-3-link"),
-                dbc.NavLink("stock-information", href="/page-4", id="page-4-link"),
-                dbc.NavLink("about Elliot Wave", href="/page-5", id="page-5-link"),
+                dbc.NavLink("real-time", href=path[0], id="real-time"),
+                dbc.NavLink("predication", href=path[1], id="prediction"),
+                dbc.NavLink("back-test", href=path[2], id="back-test"),
+                dbc.NavLink("stock-information", href=path[3], id="stock-information"),
+                dbc.NavLink("about Elliot Wave", href=path[4], id="about"),
             ],
             vertical=True,
             pills=True,

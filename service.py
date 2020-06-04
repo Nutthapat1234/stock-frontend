@@ -16,14 +16,14 @@ class Service:
             raise Exception("The Service is already init")
         else:
             self.baseUrl = {
-                "silver": config.silverUrl,
+                "stock": config.stockUrl,
                 "predictionUrl": config.predictionUrl,
                 "backTestUrl": config.backtestUrl
             }
             Service.__instance = self
 
     def __getHistory(self, name, interval):
-        response = requests.get(self.baseUrl[name] + interval)
+        response = requests.get(self.baseUrl['stock'] + name + '?timeframe=' + interval + '&range=all')
         if response.status_code == 200:
             data = response.json()[0]
             return data["data"]
@@ -79,5 +79,7 @@ class Service:
             y.append(element["last"])
         return {"x": x, "y": y, "label": data["label"]}
 
-# if __name__ == '__main__':
-#     Service.getInstance().getPrediction([1.0, 0.122, 0.1, 0.43, 0.92, 0.51, 0.92, 0.25, 0.68, 1.0])
+
+if __name__ == '__main__':
+    x = Service.getInstance().getGraph("MSFT", "1m", "scatter")
+    print(x)

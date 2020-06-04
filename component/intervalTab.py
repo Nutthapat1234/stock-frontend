@@ -14,7 +14,7 @@ component = dbc.Container(
         dbc.Tabs(
             tabList,
             id="tabs",
-            active_tab="1mi"
+            active_tab="1m"
         ),
         dbc.Spinner(
             html.Div(id="tab-content", className="p-4"),

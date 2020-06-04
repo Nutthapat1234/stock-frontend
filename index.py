@@ -17,5 +17,5 @@ app.layout = html.Div([dcc.Location(id="url"), sidebar.component, content,
                        )])
 
 if __name__ == '__main__':
-    # app.run_server(host='0.0.0.0', debug=True)
-    app.run_server()
+    app.run_server(host='0.0.0.0', debug=True)
+    # app.run_server()
