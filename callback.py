@@ -58,16 +58,16 @@ def render_page_content(pathname):
      Input("chart-variable", "value"), ]
 )
 def render_real_time_tab_content(active_tab, stock, chartType):
-    service = Service.getInstance()
     if stock and chartType:
         if active_tab in except_interval and chartType == "Candlestick":
             return dbc.Jumbotron(
-        [
-            html.H1("404: Not found", className="text-danger"),
-            html.Hr(),
-            html.P(f"No Feature for {active_tab} time interval"),
-        ]
-    )
+                [
+                    html.H1("404: Not found", className="text-danger"),
+                    html.Hr(),
+                    html.P(f"No Feature for {active_tab} time interval"),
+                ]
+            )
+        service = Service.getInstance()
         result = service.getGraph(stock, active_tab, chartType)
         figure = None
         if chartType == "Scatter":
@@ -104,121 +104,128 @@ def render_real_time_tab_content(active_tab, stock, chartType):
     Output("prediction-graph", "children"),
     [Input("stock-prediction-variable", "value")]
 )
-@cache.memoize(timeout=TIMEOUT)
 def render_prediction_graph(stock):
     global stock_stage
     stock = stock or stock_stage
-    if stock:
-        container = []
-        for interval in prediction_interval:
-            result = Service.getInstance().getGraph(stock, interval, "Scatter")
-            x = result["x"]
-            y = result["y"]
 
-            all_point = go.Scatter(x=x, y=y, mode="lines", showlegend=False)
-            last_ten = go.Scatter(x=x[-10:], y=y[-10:], mode=result["mode"], name="last 10 point")
-            container.append(html.H3("Prediction " + stock + " for " + interval))
+    @cache.memoize(timeout=TIMEOUT)
+    def compute_graph(stock):
+        if stock:
+            container = []
+            for interval in prediction_interval:
+                result = Service.getInstance().getGraph(stock, interval, "Scatter")
+                x = result["x"]
+                y = result["y"]
 
-            buttons = []
-            data = []
-            number = 0
-            active = 0
-            active_name = ""
-            active_value = None
-            active_color = None
-            # for example
-            output = Service.getInstance().getPrediction("stock", y[-10:])
-            possible_value = max(output)
-            for index in range(13):
-                show = False
-                if index == 0:
-                    name = "original"
-                    button_name = "original"
-                    data = [all_point, last_ten]
-                else:
-                    name = "pattern " + str(index) + " " + pattern_name[index] + " " + str(round(output[number])) + "%"
-                    button_name = "pattern " + str(index) + " " + str(round(output[number])) + "%"
-                    if number < len(output) and output[number] == possible_value:
-                        active_name = name
-                        active = number + 1
-                        if round(output[number]) > 90:
-                            if active_name in predict_trend["up"]:
-                                active_value = "This stock tend to be up"
-                                active_color = "success"
+                all_point = go.Scatter(x=x, y=y, mode="lines", showlegend=False)
+                last_ten = go.Scatter(x=x[-10:], y=y[-10:], mode=result["mode"], name="last 10 point")
+                container.append(html.H3("Prediction " + stock + " for " + interval))
+
+                buttons = []
+                data = []
+                number = 0
+                active = 0
+                active_name = ""
+                active_value = None
+                active_color = None
+                # for example
+                output = Service.getInstance().getPrediction("stock", y[-10:])
+                possible_value = max(output)
+                for index in range(13):
+                    show = False
+                    if index == 0:
+                        name = "original"
+                        button_name = "original"
+                        data = [all_point, last_ten]
+                    else:
+                        name = "pattern " + str(index) + " " + pattern_name[index] + " " + str(
+                            round(output[number])) + "%"
+                        button_name = "pattern " + str(index) + " " + str(round(output[number])) + "%"
+                        if number < len(output) and output[number] == possible_value:
+                            active_name = name
+                            active = number + 1
+                            if round(output[number]) > 90:
+                                if active_name in predict_trend["up"]:
+                                    active_value = "This stock tend to be up"
+                                    active_color = "success"
+                                else:
+                                    active_value = "This stock tend to be down"
+                                    active_color = "danger"
                             else:
-                                active_value = "This stock tend to be down"
-                                active_color = "danger"
-                        else:
-                            active_value = "The similarity of pattern is less than 90%, this stock is currently in unknown trend"
-                            active_color = "dark"
-                        show = True
-                    label_name = "pattern " + str(index)
-                    normalized_value = normalize(max(y[-10:]), min(y[-10:]), standard_pattern[number])
-                    data.append(
-                        go.Scatter(x=x[-10:], y=normalized_value, mode="lines+markers",
-                                   name=label_name,
-                                   visible=show,
-                                   )
-                    )
-                    number += 1
-                buttons.append(dict(
-                    label=button_name,
-                    method="update",
-                    args=[
-                        {"visible": show_prediction[index],
-                         "title": name,
-                         "annotations": []}]), )
+                                active_value = "The similarity of pattern is less than 90%, this stock is currently in unknown trend"
+                                active_color = "dark"
+                            show = True
+                        label_name = "pattern " + str(index)
+                        normalized_value = normalize(max(y[-10:]), min(y[-10:]), standard_pattern[number])
+                        data.append(
+                            go.Scatter(x=x[-10:], y=normalized_value, mode="lines+markers",
+                                       name=label_name,
+                                       visible=show,
+                                       )
+                        )
+                        number += 1
+                    buttons.append(dict(
+                        label=button_name,
+                        method="update",
+                        args=[
+                            {"visible": show_prediction[index],
+                             "title": name,
+                             "annotations": []}]), )
 
-            fig = go.Figure(
-                data=data,
-                layout=go.Layout(
-                    title=active_name,
-                    height=600,
-                    width=1050,
-                    yaxis={
-                        'range': [min(y[-20:]) - 5, max(y[-20:]) + 5]
-                    },
-                    xaxis={
-                        'range': [datetime.fromisoformat(min(x[-15:])[:-1]) - timedelta(days=focus_range[interval]),
-                                  datetime.fromisoformat(max(x[-15:])[:-1]) + timedelta(days=focus_range[interval])
+                fig = go.Figure(
+                    data=data,
+                    layout=go.Layout(
+                        title=active_name,
+                        height=600,
+                        width=1050,
+                        yaxis={
+                            'range': [min(y[-20:]) - 5, max(y[-20:]) + 5]
+                        },
+                        xaxis={
+                            'range': [datetime.fromisoformat(min(x[-15:])[:-1]) - timedelta(days=focus_range[interval]),
+                                      datetime.fromisoformat(max(x[-15:])[:-1]) + timedelta(days=focus_range[interval])
 
-                                  ],
-                    },
-                ),
-            )
-            fig.update_layout(
-                updatemenus=[
-                    dict(
-                        type="buttons",
-                        direction="down",
-                        active=active,
-                        x=1.4,
-                        y=1.1,
-                        buttons=list(buttons),
-                    )
-                ])
-            container.append(
-                dbc.Row(
-                    [
-                        dbc.Alert(id="alert",
-                                  children="From the most percentage of similar pattern: " + active_value,
-                                  color=active_color,
-                                  style={"width": "100%"})
-                    ]
+                                      ],
+                        },
+                    ),
                 )
-            )
-            container.append(
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                dcc.Graph(figure=fig)
-                            ]
-                        ),
-                    ],
-                ),
-            )
-        stock_stage = stock
+                fig.update_layout(
+                    updatemenus=[
+                        dict(
+                            type="buttons",
+                            direction="down",
+                            active=active,
+                            x=1.4,
+                            y=1.1,
+                            buttons=list(buttons),
+                        )
+                    ])
+                container.append(
+                    dbc.Row(
+                        [
+                            dbc.Alert(id="alert",
+                                      children="From the most percentage of similar pattern: " + active_value,
+                                      color=active_color,
+                                      style={"width": "100%"})
+                        ]
+                    )
+                )
+                container.append(
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
+                                    dcc.Graph(figure=fig)
+                                ]
+                            ),
+                        ],
+                    ),
+                )
+            return container, stock
+
+    if stock:
+        container, stock_stage = compute_graph(stock)
+        print(stock_stage)
         return container
 
 
@@ -233,51 +240,58 @@ def delete_cache(n):
     Output("backTest-graph", "children"),
     [Input("stock-backTest-variable", "value")]
 )
-@cache.memoize(timeout=TIMEOUT)
 def render_backTest_graph(stock):
     global stock_stage
     stock = stock or stock_stage
+
+    @cache.memoize(timeout=TIMEOUT)
+    def compute_graph(stock):
+        if stock:
+            result = Service.getInstance().getBackTest(stock)
+            x_value = result["x"]
+            y_value = result["y"]
+            data_set = {}
+            graphs = []
+            for element in result["label"]:
+                if element["pattern"] not in data_set:
+                    data_set[element["pattern"]] = {"x_value": [], "y_value": [], "pattern": element["pattern"]}
+                index = element["index"]
+                start_index = -index - 9
+                end_index = -index + 1
+                if end_index == 0:
+                    end_index = len(y_value)
+                data_set[element["pattern"]]["x_value"] += x_value[start_index:end_index]
+                data_set[element["pattern"]]["x_value"] += [None]
+                data_set[element["pattern"]]["y_value"] += y_value[start_index:end_index]
+                data_set[element["pattern"]]["y_value"] += [None]
+
+            for pattern in sorted(data_set):
+                pattern = data_set[pattern]
+                if pattern["pattern"] in predict_trend["up"]:
+                    value = "This stock tend to be up"
+                    color = "success"
+                else:
+                    value = "This stock tend to be down"
+                    color = "danger"
+
+                data = [go.Scatter(x=x_value, y=y_value, mode="lines", name=stock),
+                        go.Scatter(x=pattern["x_value"], y=pattern["y_value"], mode="lines+markers",
+                                   name="Pattern " + str(pattern["pattern"]))]
+                fig = go.Figure(data=data)
+                graphs.append(
+                    html.H3(
+                        stock + " Pattern " + str(pattern["pattern"]) + " (" + pattern_name[pattern["pattern"]] + ")"))
+                graphs.append(dbc.Alert(
+                    children="From the principle in pattern " + str(pattern["pattern"]) + " :" + value,
+                    color=color,
+                    style={"width": "100%"}))
+                graphs.append(dcc.Graph(figure=fig))
+                graphs.append(html.Br())
+
+            return graphs, stock
+
     if stock:
-        result = Service.getInstance().getBackTest(stock)
-        x_value = result["x"]
-        y_value = result["y"]
-        data_set = {}
-        graphs = []
-        for element in result["label"]:
-            if element["pattern"] not in data_set:
-                data_set[element["pattern"]] = {"x_value": [], "y_value": [], "pattern": element["pattern"]}
-            index = element["index"]
-            start_index = -index - 9
-            end_index = -index + 1
-            if end_index == 0:
-                end_index = len(y_value)
-            data_set[element["pattern"]]["x_value"] += x_value[start_index:end_index]
-            data_set[element["pattern"]]["x_value"] += [None]
-            data_set[element["pattern"]]["y_value"] += y_value[start_index:end_index]
-            data_set[element["pattern"]]["y_value"] += [None]
-
-        for pattern in sorted(data_set):
-            pattern = data_set[pattern]
-            if pattern["pattern"] in predict_trend["up"]:
-                value = "This stock tend to be up"
-                color = "success"
-            else:
-                value = "This stock tend to be down"
-                color = "danger"
-
-            data = [go.Scatter(x=x_value, y=y_value, mode="lines", name=stock),
-                    go.Scatter(x=pattern["x_value"], y=pattern["y_value"], mode="lines+markers",
-                               name="Pattern " + str(pattern["pattern"]))]
-            fig = go.Figure(data=data)
-            graphs.append(
-                html.H3(stock + "Pattern " + str(pattern["pattern"]) + " (" + pattern_name[pattern["pattern"]] + ")"))
-            graphs.append(dbc.Alert(
-                children="From the principle in pattern " + str(pattern["pattern"]) + " :" + value,
-                color=color,
-                style={"width": "100%"}))
-            graphs.append(dcc.Graph(figure=fig))
-            graphs.append(html.Br())
-        stock_stage = stock
+        graphs, stock_stage = compute_graph(stock)
         return graphs
 
 
