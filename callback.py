@@ -321,6 +321,7 @@ def render_backTest_graph(stock):
 def update_image_src(value):
     global stock_stage
     value = value or stock_stage
+    stock_stage = value
     if value == 'AAPL':
         return "assets/APPL.png"
     elif value == 'FB':
@@ -349,6 +350,7 @@ def update_image_src(value):
 def update_output(value):
     global stock_stage
     value = value or stock_stage
+    stock_stage =value
     if value == 'AAPL':
         return "Apple Inc. is engaged in designing, manufacturing and marketing mobile communication and media devices, personal computers, and portable digital music players. The Company's products and services include iPhone, iPad, Mac, iPod, Apple TV, a portfolio of consumer and professional software applications, the iOS and Mac OS X operating systems, iCloud, and a range of accessory, service and support offerings. It sells its products worldwide through its online stores, its retail stores, its direct sales force, third-party wholesalers, and resellers. Apple Inc. is headquartered in Cupertino, California."
     elif value == 'FB':
@@ -378,6 +380,7 @@ def update_output(value):
 def update_table(stock_dropdown):
     global stock_stage
     stock_dropdown = stock_dropdown or stock_stage
+    stock_stage = stock_dropdown
     if stock_dropdown:
         if stock_dropdown == 'AAPL':
             df = pd.read_csv('./assets/APPLEINC1.csv')
@@ -400,7 +403,6 @@ def update_table(stock_dropdown):
         elif stock_dropdown == 'MSFT':
             df = pd.read_csv('./assets/MSFT1.csv')
 
-        stock_stage = stock_dropdown
         return dash_table.DataTable(
             data=df.to_dict('records')
             , columns=[{"name": i, "id": i} for i in df.columns]
@@ -427,6 +429,7 @@ def update_table(stock_dropdown):
 def update_table2(stock_dropdown):
     global stock_stage
     stock_dropdown = stock_dropdown or stock_stage
+    stock_stage = stock_dropdown
     if stock_dropdown:
         if stock_dropdown == 'AAPL':
             df = pd.read_csv('./assets/APPLEINC2.csv')

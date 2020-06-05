@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 from flask_caching import Cache
 from whitenoise import WhiteNoise
 
-app = dash.Dash(external_stylesheets=[dbc.themes.PULSE], suppress_callback_exceptions=True)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.PULSE], suppress_callback_exceptions=True)
 server = app.server
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'filesystem',
@@ -15,4 +15,3 @@ server.wsgi_app = WhiteNoise(
     root='assets/',
     prefix='assets/'
 )
-
