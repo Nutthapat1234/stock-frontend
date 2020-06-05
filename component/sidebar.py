@@ -10,12 +10,12 @@ component = html.Div(
         html.H2("Stock", className="display-4"),
         html.Hr(),
         html.P(
-            "Predicate stock using Elliott Wave", className="lead"
+            "Predict stock using Elliott Wave", className="lead"
         ),
         dbc.Nav(
             [
                 dbc.NavLink("real-time", href=path[0], id="real-time"),
-                dbc.NavLink("predication", href=path[1], id="prediction"),
+                dbc.NavLink("prediction", href=path[1], id="prediction"),
                 dbc.NavLink("back-test", href=path[2], id="back-test"),
                 dbc.NavLink("stock-information", href=path[3], id="stock-information"),
                 dbc.NavLink("about Elliot Wave", href=path[4], id="about"),

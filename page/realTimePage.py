@@ -1,5 +1,4 @@
 import dash_bootstrap_components as dbc
-
 from component import intervalTab
 from component.control import generateControl
 from config import stockList, chartList
@@ -34,7 +33,7 @@ component = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
-                    intervalTab.component,
+                     intervalTab.component,
                 )
             ]
         )

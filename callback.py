@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import dash_table
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -11,7 +11,7 @@ import component.intervalTab
 from config import prediction_interval, show_prediction, standard_pattern, focus_range, pattern_name, predict_trend, \
     except_interval, path
 
-from page import realTimePage, predictionPage, backTestPage, stockInfoPage, aboutPage
+from page import realTimePage, predictionPage, backTestPage, stockInfoPage, aboutPage, notFoundPage
 from service import Service
 
 TIMEOUT = 60 * 60
@@ -42,13 +42,7 @@ def render_page_content(pathname):
     elif pathname == path[4]:
         return aboutPage.component
     # If the user tries to reach a different page, return a 404 message
-    return dbc.Jumbotron(
-        [
-            html.H1("404: Not found", className="text-danger"),
-            html.Hr(),
-            html.P(f"The pathname {pathname} was not recognised..."),
-        ]
-    )
+    return notFoundPage.generateNotFound(f"The pathname {pathname} was not recognised...")
 
 
 @app.callback(
@@ -60,44 +54,70 @@ def render_page_content(pathname):
 def render_real_time_tab_content(active_tab, stock, chartType):
     if stock and chartType:
         if active_tab in except_interval and chartType == "Candlestick":
-            return dbc.Jumbotron(
-                [
-                    html.H1("404: Not found", className="text-danger"),
-                    html.Hr(),
-                    html.P(f"No Feature for {active_tab} time interval"),
-                ]
-            )
+            return notFoundPage.generateNotFound(f"No avaliable Candle-Stick graph for {active_tab} time interval")
         service = Service.getInstance()
         result = service.getGraph(stock, active_tab, chartType)
         figure = None
         if chartType == "Scatter":
             figure = go.Scatter(x=result["x"], y=result["y"], mode="lines")
-            focus = result["x"]
         elif chartType == "Candlestick":
             figure = go.Candlestick(x=result["start"],
                                     open=result["open"],
                                     high=result["high"],
                                     low=result["low"],
                                     close=result["close"])
-            focus = result["start"]
 
-        return dcc.Graph(figure=go.Figure(
-            data=[figure],
-            layout=go.Layout(
-                height=600,
-                xaxis={
-                    # 'range': [min(focus[-20:]), max(focus[-20:])],
-                    'rangeslider': {'visible': True},
-                },
-            ),
-        ))
+        return dbc.Container(
+            [dcc.Graph(
+                id="live-graph",
+                figure=go.Figure(
+                    data=[figure],
+                    layout=go.Layout(
+                        height=600,
+                        xaxis={
+                            # 'range': [min(focus[-20:]), max(focus[-20:])],
+                            'rangeslider': {'visible': True},
+                        },
+                    ),
+                )),
+                dcc.Interval(
+                    id='graph-update',
+                    interval=60 * 1000
+                ), ],
+        )
     else:
         return dcc.Graph(figure=go.Figure(
-            data=[go.Scatter(x=[], y=[], mode="lines+markers")],
+            data=[go.Scatter(x=[], y=[], mode="lines")],
             layout=go.Layout(
                 height=600
             )
         ))
+
+
+@app.callback(Output('live-graph', 'figure'),
+              [Input('graph-update', 'n_intervals'),
+               Input("tabs", "active_tab"),
+               Input("stock-variable", "value"),
+               Input("chart-variable", "value"), ],
+              [State('live-graph', 'figure')])
+def update_graph_scatter(i, interval, stock, chartType, figure):
+    if i and interval == "1m":
+        x = figure['data'][0]['x']
+        y = figure['data'][0]['y']
+        result = Service.getInstance().getGraph(stock, interval, chartType)
+        if result['x'][-1] == x[-1]:
+            print('No change', result['x'][-1])
+            return figure
+        print(result['x'][-1], result['y'][-1])
+        x.append(result['x'][-1])
+        y.append(result['y'][-1])
+        return go.Figure(
+            data=[go.Scatter(x=x, y=y, mode="lines")],
+            layout=go.Layout(
+                height=600
+            )
+        )
+    return figure
 
 
 @app.callback(
