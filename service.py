@@ -81,5 +81,8 @@ class Service:
 
 
 if __name__ == '__main__':
-    x = Service.getInstance().getGraph("MSFT", "1m", "scatter")
-    print(x)
+    from datetime import datetime
+
+    print(datetime.now())
+    r = requests.get('https://stormy-mesa-57066.herokuapp.com/BDMS_BK?timeframe=1m&range=all')
+    print(datetime.now())

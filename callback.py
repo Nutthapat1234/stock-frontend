@@ -66,7 +66,6 @@ def render_real_time_tab_content(active_tab, stock, chartType):
                                     high=result["high"],
                                     low=result["low"],
                                     close=result["close"])
-
         return dbc.Container(
             [dcc.Graph(
                 id="live-graph",
@@ -75,7 +74,6 @@ def render_real_time_tab_content(active_tab, stock, chartType):
                     layout=go.Layout(
                         height=600,
                         xaxis={
-                            # 'range': [min(focus[-20:]), max(focus[-20:])],
                             'rangeslider': {'visible': True},
                         },
                     ),
@@ -106,15 +104,16 @@ def update_graph_scatter(i, interval, stock, chartType, figure):
         y = figure['data'][0]['y']
         result = Service.getInstance().getGraph(stock, interval, chartType)
         if result['x'][-1] == x[-1]:
-            print('No change', result['x'][-1])
             return figure
-        print(result['x'][-1], result['y'][-1])
         x.append(result['x'][-1])
         y.append(result['y'][-1])
         return go.Figure(
             data=[go.Scatter(x=x, y=y, mode="lines")],
             layout=go.Layout(
-                height=600
+                height=600,
+                xaxis={
+                    'rangeslider': {'visible': True},
+                },
             )
         )
     return figure
@@ -245,7 +244,6 @@ def render_prediction_graph(stock):
 
     if stock:
         container, stock_stage = compute_graph(stock)
-        print(stock_stage)
         return container
 
 
