@@ -14,7 +14,7 @@ from config import prediction_interval, show_prediction, standard_pattern, focus
 from page import realTimePage, predictionPage, backTestPage, stockInfoPage, aboutPage, notFoundPage
 from service import Service
 
-TIMEOUT = 60 * 60
+TIMEOUT = 60 * 60 * 1000
 stock_stage = None
 
 
